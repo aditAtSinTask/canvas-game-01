@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charsetgoyang dombret="utf-8">
+    <title>Canvas Game 01 - HTML5 Canvas</title>
+    <style>
+      .hide {
+        display: none;
+      }
+
+      .float-canvas {
+        float: left;
+        width: 640px;
+        box-sizing: border-box;
+      }
+
+      .margin-left-canvas {
+        margin-left: 5px;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="float-canvas margin-left-canvas">
+      <canvas id="secondCanvas" width="640" height="480" style="border-right: 2px solid #555555;">
+      </canvas>
+
+      <script type="text/javascript">
+        (() => {
+          class CanvasTwo {
+            canvas;
+            ctx;
+
+            heightBox;
+            heightBoxTwo;
+
+            keypressValue = 4;
+            keypressHold = false;
+            keypressOnHold = false;
+            keypressTimeout;
+            boxSize = 10;
+            debug = false;
+
+            randomGoals = 1;
+            randomSecondsChangePosValue = 0;
+            goalsSize = 30;
+
+            randomGoalsTwo = 1;
+            randomSecondsChangePosTwoValue = 0;
+            goalsSizeTwo = 30;
+
+            scorePlusRandom = 1;
+            score = 0;
+
+            speed;
+            maxStep;
+            currentStep;
+            currentStepPercentage;
+            gameSpeedReset;
+
+            constructor() {
+              this.canvas = document.getElementById('secondCanvas');
+              this.ctx = this.canvas.getContext('2d');
+              this.heightBox = (this.canvas.height/2);
+              this.heightBoxTwo = (this.canvas.height/2) + this.boxSize;
+
+              this.speed = 2.5;
+              this.maxStep = this.canvas.width;
+              this.currentStep = 0;
+              this.currentStepPercentage = 0;
+              this.gameSpeedReset = 10;
+
+              this.ctx.font = '13px arial';
+              this.ctx.fillText('Second Canvas', 5, (this.canvas.height - 5));
+              this.randomGenerateGoals();
+              this.randomGenerateGoalsTwo();
+              this.randomSecondsChangePos();
+              this.randomSecondsChangePosTwo();
+              this.randomGenerateScore();
+              this.randomGameSpeedReset();
+            }
+
+            randomGenerateScore() {
+              this.scorePlusRandom = Math.round(Math.random() * (10 - 3) + 3);
+            }
+
+            randomGameSpeedReset() {
+              this.gameSpeedReset = Math.round(Math.random() * (10 - 3) + 3);
+            }
+
+            randomGenerateGoals() {
+              this.randomGoals = Math.round(Math.random() * ((this.canvas.height - this.goalsSize) - 1) + 1);
+            }
+
+            randomGenerateGoalsTwo() {
+              this.randomGoalsTwo = Math.round(Math.random() * ((this.canvas.height - this.goalsSizeTwo) - 1) + 1);
+            }
+
+            randomSecondsChangePos() {
+              this.randomSecondsChangePosValue = Math.round(Math.random() * (70 - 1) + 1);
+            }
+
+            randomSecondsChangePosTwo() {
+              this.randomSecondsChangePosTwoValue = Math.round(Math.random() * (90 - 1) + 1);
+            }
+
+            onKeypress(e) {
+              if (e.keyCode === 119) {
+                // GO UP
+                if (this.heightBox > 0) {
+                  this.heightBox = this.heightBox - this.keypressValue;
+                  if (this.heightBox < 0) {
+                    this.heightBox = 0;
+                  } 
+                }
+                this.keypressHold = true;
+              } else if (e.keyCode === 115) {
+                // GO DOWN
+                const canvasHeight = this.canvas.height - this.boxSize;
+                if (this.heightBox < canvasHeight) {
+                  this.heightBox = this.heightBox + this.keypressValue;
+                  if (this.heightBox > canvasHeight) {
+                    this.heightBox = canvasHeight;
+                  }
+                }
+                this.keypressHold = true;
+              }
+
+              if (e.keyCode === 101) {
+                // GO UP
+                if (this.heightBoxTwo > 0) {
+                  this.heightBoxTwo = this.heightBoxTwo - this.keypressValue;
+                  if (this.heightBoxTwo < 0) {
+                    this.heightBoxTwo = 0;
+                  } 
+                }
+                this.keypressHold = true;
+              } else if (e.keyCode === 100) {
+                // GO DOWN
+                const canvasHeight = this.canvas.height - this.boxSize;
+                if (this.heightBoxTwo < canvasHeight) {
+                  this.heightBoxTwo = this.heightBoxTwo + this.keypressValue;
+                  if (this.heightBoxTwo > canvasHeight) {
+                    this.heightBoxTwo = canvasHeight;
+                  }
+                }
+                this.keypressHold = true;
+              }
+
+              if (this.keypressOnHold) {
+                this.keypressValue = 7;
+              }
+
+              this.keypressTimeout = setTimeout(() => {
+                if (this.keypressHold) {
+                  this.keypressOnHold = true;
+                } else {
+                  this.onKeyup();
+                }
+              }, 2500);
+            }
+
+            onKeyup() {
+              this.keypressHold = false;
+              this.keypressOnHold = false;
+              this.keypressValue = 1;
+              clearTimeout(this.keypressTimeout);
+            }
+
+            init() {
+              window.requestAnimationFrame(this.draw.bind(this));
+              document.getElementsByTagName('body')[0].addEventListener('keypress', this.onKeypress.bind(this));
+              document.getElementsByTagName('body')[0].addEventListener('keyup', this.onKeyup.bind(this));
+            }
+
+            viewZero(input) {
+              if (input < 10) {
+                return '0' + input;
+              }
+              return input;
+            }
+
+            draw() {
+              const time = new Date();
+
+              if (
+                this.currentStepPercentage < 4 &&
+                this.currentStepPercentage > 1
+              ) {
+                this.randomGenerateGoals();
+                this.randomSecondsChangePos();
+                this.randomSecondsChangePosTwo();
+              }
+
+              if (
+                this.currentStepPercentage > this.randomSecondsChangePosValue &&
+                this.currentStepPercentage < (this.randomSecondsChangePosValue + 4)
+              ) {
+                this.randomGenerateGoals();
+                if (this.currentStepPercentage === (this.randomSecondsChangePosValue + 3)) {
+                  this.randomSecondsChangePos();
+                }
+              }
+
+              if (
+                this.currentStepPercentage > this.randomSecondsChangePosTwoValue &&
+                this.currentStepPercentage < (this.randomSecondsChangePosTwoValue + 4)
+              ) {
+                this.randomGenerateGoalsTwo();
+                if (this.currentStepPercentage === (this.randomSecondsChangePosTwoValue + 3)) {
+                  this.randomSecondsChangePosTwo();
+                }
+              }
+
+              if (this.currentStepPercentage === 0) {
+                let goalsOne = false;
+                let goalsTwo = false;
+
+                if (
+                  this.heightBox > this.randomGoals &&
+                  this.heightBox < (this.randomGoals + this.goalsSize)
+                ) {
+                  goalsOne = true;
+                  this.score = this.score + 1;
+                }
+
+                if (
+                  this.heightBoxTwo > this.randomGoalsTwo &&
+                  this.heightBoxTwo < (this.randomGoalsTwo + this.goalsSizeTwo)
+                ) {
+                  goalsTwo = true;
+                  this.score = this.score + 1;
+                }
+
+                if (goalsOne && goalsTwo) {
+                  this.score = this.score + this.scorePlusRandom
+                }
+
+                if (!goalsOne && !goalsTwo) {
+                  if (this.score > 0) {
+                    this.score = this.score - 1;
+                  }
+                }
+
+                this.randomGenerateScore();
+                this.randomGameSpeedReset();
+              }
+
+              this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+              // dot 1
+              const movementOne = this.currentStep;
+              this.ctx.fillStyle = '#FA6900';
+              this.ctx.fillRect(movementOne, this.heightBox, this.boxSize, this.boxSize);
+
+              this.ctx.fillStyle = '#FA6900';
+              this.ctx.fillRect((this.canvas.width - (this.goalsSize/6)), this.randomGoals, this.goalsSize, this.goalsSize);
+
+              // dot 2
+              const movementTwo = this.currentStep;
+              this.ctx.fillStyle = '#555555';
+              this.ctx.fillRect(movementTwo, this.heightBoxTwo, this.boxSize, this.boxSize);
+
+              this.ctx.fillStyle = '#555555';
+              this.ctx.fillRect((this.canvas.width - (this.goalsSizeTwo/6)), this.randomGoalsTwo, this.goalsSizeTwo, this.goalsSizeTwo);
+
+              // Footer text
+              this.ctx.fillStyle = '#555555';
+              this.ctx.font = '20px arial';
+              this.ctx.fillText(
+                'TIME ' + this.viewZero(time.getHours()) +
+                ':' + this.viewZero(time.getMinutes()) +
+                ':' + this.viewZero(time.getSeconds()), 5, (this.canvas.height - 5));
+
+              this.ctx.fillStyle = '#999999';
+              this.ctx.font = '20px arial';
+              this.ctx.fillText(
+                'GAME SPEED ' + Math.round(this.speed * 10) / 10 +
+                '  /  RESET AT ' + (this.gameSpeedReset)
+                , 160, (this.canvas.height - 5));
+
+              // Header text
+              this.ctx.fillStyle = '#999999';
+              this.ctx.font = '30px arial';
+              this.ctx.fillText(
+                'SCORE: ' + this.score,
+                5, 25);
+
+              setTimeout(() => {
+                window.requestAnimationFrame(this.draw.bind(this));
+                this.currentStep = this.currentStep + this.speed;
+                this.currentStepPercentage = (this.currentStep / this.maxStep) * 100;
+                if (this.currentStep > (this.maxStep + this.boxSize)) {
+                  this.currentStep = 0;
+                  this.currentStepPercentage = 0;
+                  this.speed = this.speed + 0.3;
+
+                  if (this.speed > this.gameSpeedReset) {
+                    this.speed = 2.5;
+                  }
+                }
+                if (this.debug) {
+                  console.log('Second Canvas Debug: ', this.canvas.width, this.canvas.height, this.currentStepPercentage);
+                  console.log('Game Debug: ', this.randomSecondsChangePosValue, this.heightBox, this.randomGoals);
+                }
+              }, 50);
+            }
+          }
+
+          const canvasTwo = new CanvasTwo();
+          canvasTwo.init();
+          canvasTwo.debug = false;
+        })();
+      </script>
+    </div>
+
+  </body>
+</html>
